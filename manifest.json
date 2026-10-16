@@ -1,0 +1,15 @@
+{
+  "name": "Kuis Pintar SD",
+  "short_name": "Kuis SD",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fdf2f8",
+  "theme_color": "#d8b4fe",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3197/3197967.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
