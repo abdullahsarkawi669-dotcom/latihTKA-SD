@@ -16,7 +16,6 @@ const quizTitle = document.getElementById('quiz-title');
 
 // Fungsi Memulai Kuis
 function startQuiz(subject) {
-    // PENDETEKSI ERROR: Mengecek apakah soal.js berhasil dimuat atau rusak akibat salah ketik
     if (typeof db === 'undefined') {
         alert("⚠️ GAGAL MEMUAT SOAL!\n\nFile soal.js tidak terdeteksi atau mengalami kerusakan (Syntax Error). Silakan periksa kembali file soal.js Anda, pastikan tidak ada tanda koma (,) atau kurung tutup yang terlewat.");
         return;
@@ -49,9 +48,7 @@ function generateRandomQuestions(subject, limit) {
     const perChapterLimit = Math.ceil(limit / numChapters);
 
     chapters.forEach((chap) => {
-        // Mencegah error jika bab tidak memiliki soal
         const questionsArr = chap.questions || [];
-        
         let shuffledSoal = [...questionsArr].sort(() => 0.5 - Math.random());
         let chapterQuestions = shuffledSoal.slice(0, perChapterLimit).map(q => ({
             ...q,
@@ -64,7 +61,7 @@ function generateRandomQuestions(subject, limit) {
     return selectedQuestions.slice(0, limit);
 }
 
-// Render HTML Soal ke Layar
+// Render HTML Soal ke Layar (Tombol Pembahasan di Bawah)
 function renderQuestions() {
     questionsContainer.innerHTML = '';
     
@@ -83,50 +80,55 @@ function renderQuestions() {
 
         let babHeader = '';
         if (qIndex === 0 || currentQuestions[qIndex - 1].bab !== q.bab) {
-            babHeader = `<div class="bg-indigo-100 text-indigo-800 font-extrabold px-6 py-3 mt-8 mb-4 rounded-xl text-lg uppercase tracking-wide border-l-8 border-indigo-500">${q.bab}</div>`;
+            babHeader = `<div class="bg-indigo-100 text-indigo-800 font-extrabold px-6 py-4 mt-10 mb-6 rounded-2xl text-xl uppercase tracking-wide border-l-8 border-indigo-500">${q.bab}</div>`;
         }
 
-        // Mencegah error jika opsi tidak terdefinisi
         const safeOptions = q.options || [];
         
         let opsiHtml = safeOptions.map((opsi, oIndex) => `
             <label class="cursor-pointer relative block group">
                 <input type="${inputType}" name="q_${qIndex}" value="${oIndex}" class="checkbox-custom absolute opacity-0 w-0 h-0" onchange="handleOptionChange(${qIndex}, ${oIndex}, this, ${isMultipleAnswer})">
-                <div class="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl group-hover:bg-purple-50 group-hover:border-purple-300 transition-colors flex items-center gap-3">
-                    <div class="w-6 h-6 rounded border-2 border-gray-300 flex items-center justify-center shrink-0 check-indicator">
-                        <span class="opacity-0 font-bold text-white text-xs">✓</span>
+                <div class="p-5 bg-gray-50 border-2 border-gray-200 rounded-2xl group-hover:bg-purple-50 group-hover:border-purple-300 transition-colors flex items-start gap-4">
+                    <div class="w-7 h-7 mt-0.5 rounded border-2 border-gray-300 flex items-center justify-center shrink-0 check-indicator">
+                        <span class="opacity-0 font-bold text-white text-sm">✓</span>
                     </div>
-                    <span class="text-gray-700 font-medium">${opsi.text}</span>
+                    <span class="text-gray-700 font-medium text-lg leading-relaxed">${opsi.text}</span>
                 </div>
             </label>
         `).join('');
 
         questionsContainer.innerHTML += `
             ${babHeader}
-            <div class="glass-panel p-6 rounded-3xl shadow-sm border-2 border-white relative" id="question-card-${qIndex}">
-                <div class="flex justify-between items-start mb-4 gap-4">
-                    <div class="flex-1">
-                        <h3 class="text-lg font-bold text-gray-800 mb-2">
-                             <span class="text-rose-500">Soal ${qIndex + 1}.</span> 
-                        </h3>
-                        <p class="text-gray-600 bg-gray-100 p-3 rounded-lg text-sm mb-3 italic">${q.stimulus || 'Perhatikan instruksi soal berikut:'}</p>
-                        <p class="font-bold text-gray-800">${q.questionText} ${hintText}</p>
-                    </div>
-                    <button onclick="showPembahasanSoal(${qIndex})" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-2 px-4 rounded-xl text-sm shrink-0 shadow-sm border border-blue-200">
-                        💡 Pembahasan
-                    </button>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    ${opsiHtml}
+            <div class="glass-panel p-6 md:p-8 rounded-3xl shadow-md border-2 border-white relative" id="question-card-${qIndex}">
+                
+                <!-- Bagian Judul dan Teks Pertanyaan -->
+                <div class="mb-6 border-b-2 border-gray-100 pb-4">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">
+                         <span class="text-rose-500 bg-rose-50 px-3 py-1 rounded-lg">Soal ${qIndex + 1}</span> 
+                    </h3>
+                    ${q.stimulus ? `<p class="text-gray-700 bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-xl text-base md:text-lg mb-4 leading-relaxed">${q.stimulus}</p>` : ''}
+                    <p class="font-bold text-gray-800 text-lg md:text-xl leading-relaxed">${q.questionText} <br class="md:hidden"/> ${hintText}</p>
                 </div>
                 
-                <div id="feedback-${qIndex}" class="hidden mt-6 p-4 rounded-xl font-medium border-l-4"></div>
+                <!-- Bagian Opsi Jawaban -->
+                <div class="flex flex-col gap-4 mt-2">
+                    ${opsiHtml}
+                </div>
+
+                <!-- Bagian Tombol Pembahasan di Bawah -->
+                <div class="mt-6 pt-4 border-t-2 border-gray-50 flex justify-end">
+                    <button onclick="showPembahasanSoal(${qIndex})" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-3 px-6 rounded-2xl text-sm shadow-sm border border-blue-200 w-full md:w-auto transition transform hover:scale-105">
+                        💡 Lihat Pembahasan
+                    </button>
+                </div>
+                
+                <!-- Feedback Penilaian -->
+                <div id="feedback-${qIndex}" class="hidden mt-4 p-5 rounded-2xl font-bold border-l-8 text-lg"></div>
             </div>
         `;
     });
 }
 
-// Menangani Pemilihan Opsi
 function handleOptionChange(qIndex, oIndex, el, isMultiple) {
     if (isQuizFinished) {
         el.checked = !el.checked; 
@@ -156,7 +158,6 @@ function handleOptionChange(qIndex, oIndex, el, isMultiple) {
     }
 }
 
-// Logika Penskoran Plus-Minus
 function finishQuiz() {
     if(!confirm("Yakin ingin mengumpulkan jawaban?")) return;
 
@@ -185,26 +186,32 @@ function finishQuiz() {
     postQuizActions.classList.remove('hidden');
 }
 
-// Menampilkan Pop-Up Pembahasan Satu Soal
 function showPembahasanSoal(qIndex) {
     const q = currentQuestions[qIndex];
     
-    const correctOptionsText = q.options.filter(opt => opt.isCorrect).map(opt => `<span class="bg-green-100 text-green-800 px-2 py-1 rounded font-bold mr-1">${opt.text}</span>`).join('');
+    const correctOptionsText = q.options.filter(opt => opt.isCorrect).map(opt => `<span class="bg-green-100 text-green-800 px-3 py-2 rounded-lg font-bold mr-2 mb-2 inline-block border border-green-200">${opt.text}</span>`).join('');
     
     const html = `
-        <div class="mb-4">
-            <h4 class="font-bold text-gray-800 mb-2">Soal No. ${qIndex + 1}</h4>
-            <p class="text-gray-500 text-sm italic mb-2 bg-gray-50 p-2 rounded">${q.stimulus}</p>
-            <p class="font-bold text-gray-800">${q.questionText}</p>
+        <div class="mb-5">
+            <h4 class="font-bold text-xl text-gray-800 mb-3 border-b-2 pb-2">Soal No. ${qIndex + 1}</h4>
+            ${q.stimulus ? `<p class="text-gray-700 bg-gray-100 p-4 rounded-xl mb-3 leading-relaxed border-l-4 border-gray-300">${q.stimulus}</p>` : ''}
+            <p class="font-bold text-gray-800 text-lg leading-relaxed">${q.questionText}</p>
         </div>
-        <div class="mb-4">
-            <h4 class="font-bold text-gray-800 mb-2">Kunci Jawaban:</h4>
-            <div class="flex flex-wrap gap-2">${correctOptionsText}</div>
+        <div class="mb-5 bg-white p-4 rounded-xl border-2 border-gray-100">
+            <h4 class="font-bold text-gray-500 mb-3 uppercase tracking-wide text-sm">Kunci Jawaban:</h4>
+            <div class="flex flex-wrap">${correctOptionsText}</div>
         </div>
-        <div>
-            <h4 class="font-bold text-gray-800 mb-2">Trik & Penjelasan:</h4>
-            <p class="bg-blue-50 text-blue-900 p-3 rounded-xl border border-blue-100 mb-2"><strong>Penjelasan:</strong> ${q.pembahasan}</p>
-            <p class="bg-yellow-50 text-yellow-900 p-3 rounded-xl border border-yellow-100"><strong>Trik:</strong> ${q.trik}</p>
+        <div class="space-y-4">
+            <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm">
+                <h4 class="font-bold text-blue-800 mb-2 flex items-center gap-2">📖 Penjelasan</h4>
+                <p class="text-blue-900 leading-relaxed">${q.pembahasan}</p>
+            </div>
+            ${q.trik ? `
+            <div class="bg-yellow-50 p-5 rounded-2xl border border-yellow-100 shadow-sm">
+                <h4 class="font-bold text-yellow-800 mb-2 flex items-center gap-2">⚡ Trik Cepat</h4>
+                <p class="text-yellow-900 leading-relaxed">${q.trik}</p>
+            </div>
+            ` : ''}
         </div>
     `;
     
@@ -212,7 +219,6 @@ function showPembahasanSoal(qIndex) {
     pembahasanModal.classList.remove('hidden');
 }
 
-// Menampilkan Evaluasi Seluruh Soal di Bawah Card
 function showReviewMenyeluruh() {
     currentQuestions.forEach((q, qIndex) => {
         const feedbackEl = document.getElementById(`feedback-${qIndex}`);
@@ -231,13 +237,13 @@ function showReviewMenyeluruh() {
 
         if (benar > 0 && salah === 0 && userSelected.length === correctKeys.length) {
             feedbackEl.classList.add('bg-green-100', 'border-green-500', 'text-green-800');
-            feedbackEl.innerHTML = `✅ <b>Sempurna!</b> Semua opsi dijawab benar. (Poin: ${benar})`;
+            feedbackEl.innerHTML = `✅ <b class="mr-2">Sempurna!</b> Semua opsi dijawab benar. (Poin: ${benar})`;
         } else if (benar > 0) {
-            feedbackEl.classList.add('bg-yellow-100', 'border-yellow-500', 'text-yellow-800');
-            feedbackEl.innerHTML = `⚠️ <b>Kurang Tepat.</b> Benar: ${benar}, Tebakan Salah: ${salah}. Poin: ${benar - salah}`;
+            feedbackEl.classList.add('bg-yellow-100', 'border-yellow-500', 'text-yellow-900');
+            feedbackEl.innerHTML = `⚠️ <b class="mr-2">Kurang Tepat.</b> Benar: ${benar} | Salah: ${salah} | Poin Akhir: ${benar - salah}`;
         } else {
-            feedbackEl.classList.add('bg-rose-100', 'border-rose-500', 'text-rose-800');
-            feedbackEl.innerHTML = `❌ <b>Salah Semua/Tidak Dijawab.</b> Poin: ${0 - salah}`;
+            feedbackEl.classList.add('bg-rose-100', 'border-rose-500', 'text-rose-900');
+            feedbackEl.innerHTML = `❌ <b class="mr-2">Tidak Tepat / Kosong.</b> Poin Akhir: ${0 - salah}`;
         }
 
         document.querySelectorAll(`input[name="q_${qIndex}"]`).forEach((input, oIndex) => {
