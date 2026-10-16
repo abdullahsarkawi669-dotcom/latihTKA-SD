@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Pintar SD - Latihan TKA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Nunito', sans-serif; background-color: #fdf2f8; } 
+        .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        .checkbox-custom:checked + div { background-color: #d8b4fe; border-color: #a855f7; color: #581c87; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen">
+
+    <header class="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 p-6 shadow-lg rounded-b-3xl text-center">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-wide">🌟 Kuis Pintar SD 🌟</h1>
+        <p class="text-white mt-2 font-semibold text-lg">Latihan Seru TKA Literasi & Numerasi</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 mt-6">
+        
+        <div id="home-screen" class="glass-panel p-8 rounded-3xl shadow-xl text-center border-4 border-white">
+            <h2 class="text-2xl font-bold text-purple-700 mb-6">Pilih Mata Pelajaran:</h2>
+            <div class="flex flex-col md:flex-row justify-center gap-6">
+                <button onclick="startQuiz('matematika')" class="bg-blue-400 hover:bg-blue-500 text-white text-xl font-bold py-6 px-10 rounded-3xl shadow-md transform transition hover:scale-105 border-b-4 border-blue-600">
+                    🔢 Matematika
+                </button>
+                <button onclick="startQuiz('bahasa_indonesia')" class="bg-rose-400 hover:bg-rose-500 text-white text-xl font-bold py-6 px-10 rounded-3xl shadow-md transform transition hover:scale-105 border-b-4 border-rose-600">
+                    📖 Bahasa Indonesia
+                </button>
+            </div>
+            <p class="mt-8 text-gray-500 font-semibold">Tiap sesi akan menampilkan maksimal 50 soal secara acak.</p>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-2xl shadow-sm border-2 border-purple-200">
+                <h2 id="quiz-title" class="text-xl font-bold text-purple-600">Mata Pelajaran</h2>
+                <button onclick="backToHome()" class="text-rose-500 font-bold hover:text-rose-600">❌ Keluar</button>
+            </div>
+
+            <div id="questions-container" class="space-y-8"></div>
+
+            <div class="mt-10 text-center glass-panel p-6 rounded-3xl shadow-md border-2 border-white">
+                <button id="btn-selesai" onclick="finishQuiz()" class="bg-green-400 hover:bg-green-500 text-white text-2xl font-bold py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 border-b-4 border-green-600">
+                    ✅ Selesai Mengerjakan
+                </button>
+                <div id="post-quiz-actions" class="hidden mt-6 space-x-4">
+                    <button onclick="showReviewMenyeluruh()" class="bg-purple-400 hover:bg-purple-500 text-white font-bold py-3 px-6 rounded-2xl shadow border-b-4 border-purple-600">
+                        🔍 Pembahasan Menyeluruh
+                    </button>
+                    <button onclick="backToHome()" class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-2xl shadow border-b-4 border-blue-600">
+                        🔄 Ulangi Tes Lainnya
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="score-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-purple-300 transform transition-all scale-100">
+            <h2 class="text-3xl font-extrabold text-purple-600 mb-2">Skor Kamu! 🎉</h2>
+            <div class="bg-purple-100 rounded-2xl p-6 my-6 border-2 border-purple-200">
+                <p class="text-6xl font-black text-purple-700" id="final-score">0</p>
+                <p class="text-sm text-purple-500 mt-2 font-bold">Total Poin yang Didapat</p>
+            </div>
+            <p class="text-gray-600 font-semibold text-sm mb-6">Poin = (+1 untuk setiap opsi benar, -1 untuk tebakan salah)</p>
+            <button onclick="closeScoreModal()" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-md">
+                Lihat Lembar Jawaban
+            </button>
+        </div>
+    </div>
+
+    <div id="pembahasan-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto border-4 border-blue-300 relative">
+            <button onclick="closePembahasanModal()" class="absolute top-4 right-4 bg-rose-100 text-rose-600 rounded-full w-8 h-8 flex items-center justify-center font-bold hover:bg-rose-200">X</button>
+            <h3 class="text-xl font-bold text-blue-600 border-b-2 border-blue-100 pb-2 mb-4">💡 Pembahasan Soal</h3>
+            <div id="pembahasan-content" class="text-gray-700 space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- MENGGUNAKAN FILE REFERENSI ANDA -->
+    <script src="soal.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
